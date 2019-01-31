@@ -1,0 +1,76 @@
+---
+title: 'Earnings Manipulation - Data Cleaning'
+author: "Lu Chen"
+output:
+  html_document: default
+  pdf_document: default
+Indent: false
+---
+
+```{r setup, include=TRUE, echo = TRUE, message=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+#### 1.1 Pre-processing
+**1.** The first step is to make sure the data is ready for analysis. For this assignment we only need to use gvkey (company identifier) datadate (reporting period) fyear (fiscal year) revt rect ppegt epspi ni at oancf sic rdq. Use the codebook to familiarize yourself with what these variables represent.
+
+```{r message=FALSE, warning= FALSE }
+library(ggplot2)
+library(dplyr)
+library(data.table)
+library(benford.analysis)
+library(plm)
+#set working directory to your local directory
+#setwd()
+filepath = getwd()
+df0 <- read.csv(paste(filepath, 'compustat_1950_2018_annual_merged.csv', sep = '/'))
+
+variables <- c('gvkey', 'datadate', 'fyear', 'revt', 'rect',
+               'ppegt', 'epspi', 'ni', 'at', 'oancf', 'sic', 'rdq')
+
+df1 <- df0[, variables]
+
+rm(df0)
+```
+
+**2.** Restrict sample to firms with fiscal years 1988 to 2017 inclusive.
+
+```{r, warning= FALSE}
+df1 <- df1 %>% 
+  filter(fyear >= 1988 & fyear <= 2017)
+
+```
+
+**3.** Drop any observations with missing assets, revenue, net income, EPS, accounts receivables, or operating cash flows (data errors or odd accounting rules).
+
+**Response:** Using the na.omit to remove the NAs. Then I used the summary function as well as histograms to check the distributions of all the variables to detect outliers.
+ 
+```{r}
+df1 <- df1[!is.na(df1$at),] # remove missing assets
+df1 <- df1[!is.na(df1$revt),] # remove missing revenue
+df1 <- df1[!is.na(df1$ni),] # remove missing net income
+df1 <- df1[!is.na(df1$epspi),] # remove missing EPS
+df1 <- df1[!is.na(df1$rect),] # remove mising accounts receivables
+df1 <- df1[!is.na(df1$oancf),] # remove operating cash flows
+```
+
+**4.** If PPE is missing set it as zero (often the dataset reports missing when it’s zero).
+
+```{r}
+df1$ppegt[is.na(df1$ppegt)] <- 0
+```
+
+**5.** Drop any observations where revenue or accounts receiveables are negative (data errors or odd accounting rules).
+
+```{r}
+df1 <- df1 %>% 
+  filter(revt >=0 & rect >= 0)
+```
+
+**6.** The dataset has some duplicate observations at the firm-fiscal year level where all variables values are identical except rdq. Drop duplicates at the firm-fiscal year level based on every variable except rdq.
+
+```{r}
+df1n <- unique(df1[,c(1:11)])
+```
+
+**7.** My final dataset have approximately 248,289 observations.
