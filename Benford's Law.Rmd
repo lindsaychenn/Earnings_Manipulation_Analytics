@@ -8,7 +8,7 @@ Indent: false
 ---
 
 ```{r}
-setwd("/Users/chenlu/Google Drive/Summer/6030 Accounting/data assignment1")
+setwd("")
 df1n <- read.csv('cleaned_data.csv',header = TRUE)
 attach(data)
 library(ggplot2)
