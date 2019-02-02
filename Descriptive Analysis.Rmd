@@ -1,0 +1,101 @@
+---
+title: 'Earnings Manipulation - Descriptive Analytics'
+author: "Lu Chen"
+output:
+  html_document: default
+  pdf_document: default
+Indent: false
+---
+
+```{r}
+setwd("/Users/chenlu/Google Drive/Summer/6030 Accounting/data assignment1")
+df1n <- read.csv('cleaned_data.csv',header = TRUE)
+attach(data)
+library(ggplot2)
+library(dplyr)
+library(data.table)
+library(benford.analysis)
+library(plm)
+library(knitr)
+library(kableExtra)
+library(zoo)
+```
+
+
+## 1. Descriptive Statistics. Note that all variables are reported in millions (USD).
+
+**1.** Calculage the average revenue, net income, and total assets for a firm in fiscal year 2017?
+```{r}
+df_2017 <- subset(df1n, fyear == 2017)[,c('fyear','revt', 'ni', 'at')] %>% 
+  group_by(fyear) %>% 
+  summarise(revt = mean(revt), ni = mean(ni), at = mean(at)) 
+
+df_2017n <- data.frame(t(df_2017))
+colnames(df_2017n) <- 'mean'
+df_2017n$variable <- c('fyear', 'revenue', 'net income', 'total assets')
+df_2017n <- df_2017n[c('variable', 'mean')]
+df_2017n <- df_2017n[-c(1),]
+df_2017n
+```
+
+**2.** Plot the average revenue, net income, and total assets by fiscal year (1988-2017)
+### average total asset increase drastically compared to revenue and net income
+```{r fig1, fig.height = 3, fig.width = 5, fig.align = "center"}
+df_2 <- df1n %>% 
+  group_by(fyear) %>% 
+  summarise(revt = mean(revt), ni = mean(ni), at = mean(at))
+
+ggplot(df_2)+
+  geom_line(aes(fyear, revt, color='revt'), linetype = 1)+
+  geom_line(aes(fyear, ni, color='ni'), linetype = 2)+
+  geom_line(aes(fyear, at, color='at'), linetype = 4)+
+  scale_x_continuous(limits=c(1985, 2017),breaks=seq(1985, 2017, 5))+
+  scale_color_manual(name="",values=c("revt"="darkgreen","ni"="blue", 
+                                      'at' = 'red'))+
+  theme_classic()
+```
+
+## 2. Indirect evidence of earnings management
+
+**1.** How does firms report performance compared with last year’s performance?
+
+**a.** Calculate the change in EPS from year t to t − 1 for each firm-year and plot the change in EPS restricting change in EPS ∈ [−.10, +.10] in 1 cent increments.
+```{r fig2, fig.height = 3, fig.width = 5, fig.align = "center"}
+eps_change <- df1n %>% 
+  group_by(gvkey) %>% 
+  mutate(eps_lag1 = dplyr::lag(epspi, k=1)) %>% #taking the data from one row above
+  mutate(eps_change = epspi - eps_lag1) %>% 
+  filter(eps_change >= -0.1 & eps_change <= .1)
+
+ggplot(eps_change) +
+  geom_histogram(aes(eps_change), bins = 20)+
+  labs(x = 'Change in EPS for each firm-year') + 
+  geom_vline(
+    xintercept=0, col='red', linetype=4)+
+  theme_classic()
+
+```
+
+**b.** Calculate the change in ROA and plot it in the same way as EPS. 
+### ROA (return-on- assets) is another common performance metric and is defined as net income scaled by lagged total assets.
+
+```{r fig3, fig.height = 3, fig.width = 5, fig.align = "center"}
+roa_df <- df1n %>% 
+  group_by(gvkey) %>% 
+  mutate(at_lag1 = dplyr::lag(at, k = 1)) %>% 
+  mutate(roa = ni / at_lag1) %>% 
+  filter(roa >= -.1 & roa <= .1) %>% 
+  mutate(roa_lag1 = dplyr::lag(roa, k=1),
+         roa_change = roa - roa_lag1)
+
+ggplot(subset(roa_df, roa_change != 'NA')) + 
+  geom_histogram(aes(roa_change), bins = 30)+
+  labs(x = 'ROA from year t to t-1 for each firm') + 
+  geom_vline(xintercept=0, col='red', linetype=4)+
+  theme_classic()
+```
+### Comparing ROA and EPS changing trend:EPS is more asymmetric and in the direction of positive side, indicating firms are reported to perform better YoY earnings per share than return on asset. Both performances asymmetric around 0.
+### Possible explanations are: 1) earnings management 2) firms working harder and 3) inflation or other general trends that make small improvements more likely than small set backs.
+### EPS equals to net income divided by total number of issued stock shares; ROA equals to net income deivided by lagged total assets. From the calculation, we can learn that they have the same numerator but different denominator. Firm have the ability to manage the number of shares outstanding (EPS denominator) by issuing more shares or repurchasing them back. Also if the firm assume the investors look at EPS more often than ROA, they have the incentive to drive EPS harder. 
+
+
