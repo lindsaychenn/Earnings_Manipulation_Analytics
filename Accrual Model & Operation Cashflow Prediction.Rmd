@@ -1,0 +1,120 @@
+---
+title: 'Earnings Manipulation - Accrual Model & operation cashflow prediction model'
+author: "Lu Chen"
+output:
+  html_document: default
+  pdf_document: default
+Indent: false
+---
+
+```{r}
+setwd("/Users/chenlu/Google Drive/Summer/6030 Accounting/data assignment1")
+df1n <- read.csv('cleaned_data.csv',header = TRUE)
+attach(data)
+library(ggplot2)
+library(dplyr)
+library(data.table)
+library(benford.analysis)
+library(plm)
+library(knitr)
+library(kableExtra)
+library(zoo)
+```
+
+**1.** discretionary accruals model 
+
+Accrualsit = β0 + β1Cash Revenue Growthit + β2Gross PPEit + ψSICi + εit
+
+i. accrualsit is net income - operating cash flows for firm i in fiscal year t
+ii. cash revenue growth is ∆ revenue - ∆ rect
+
+iii. all variables above (except SIC) including gross PPE is scaled by prior year’s total assets
+iv. obtain the fitted residuals εˆ for each firm-year
+v. Create a new variable which is the absolute value of εˆit . This is commonly known as the unsigned discretionary accruals which are the evidence of earning manipulation. 
+
+```{r}
+accrual_df <- df1n %>%
+  group_by(gvkey) %>%
+  mutate(at_lag1 = dplyr::lag(at, k=1),
+         rev_lag1 = dplyr::lag(revt, k=1),
+         rec_lag1 = dplyr::lag(rect, k=1),
+         oancf_lag1 = dplyr::lag(oancf, k=1)) %>%
+  filter(at_lag1 != 0) %>% 
+  mutate(accrual = (ni - oancf)/at_lag1, 
+         cash_revenue = (rev_lag1 - rec_lag1)/at_lag1,
+         ppe = ppegt / at_lag1)
+
+fixed_effect.accrual <- plm(accrual ~ cash_revenue + ppe + sic, data= accrual_df,
+                            index = c('sic'),
+                            model = 'within')
+
+accrual_df$residual <- fixed_effect.accrual$residuals
+accrual_df$residual <- abs(accrual_df$residual)
+```
+
+**2.** Firms that tend to earnings manage also tend to delay their financial reporting.Set delay as missing when it is negative or delay is more than 180 days unusual circumstances or data errors. Calculate the average delay (in days) in the sample.
+
+```{r}
+library('zoo')
+df1m <- df1n %>% 
+  mutate(date = as.Date(datadate, origin = '1960-01-01'), #  firm’s operating period end-day
+         rdq1 = as.Date(rdq, format='%d-%b-%y'), # firm's earnings announcement date
+         delay = rdq1-date) %>% 
+  mutate(delay1 = ifelse((delay<0 & delay > 180), NA, delay))
+
+mean(df1m$delay1,na.rm = TRUE) 
+
+```
+
+**3.** Unsigned Discretionary Accrual Model
+
+Delayit = β0 + β1Unsigned Discretionary Accrualit + ψFirmi + εit (2)
+
+i. Firmi represents a vector of indicators equaling 1 for each gvkey and zero otherwise.
+```{r}
+# merge the rdq and delay data to the accrual dataset
+variable1 = c("gvkey","datadate","fyear","revt" ,"rect","ppegt","epspi", "ni","at","oancf","sic")
+accrual_df1 <- accrual_df %>% 
+  left_join(df1m, by = variable1) 
+
+# remove the rows with NA rdqs and delays
+accrual_df1 <- accrual_df1[!is.na(accrual_df1$delay1),]
+
+# perform PLM analysis
+delay.fit <- plm(delay1 ~ residual, data=accrual_df1,
+                 index = c('gvkey'),
+                 model = 'within')
+
+## this is a within fixed effects model (we are absorbing gvkeys)
+summary(delay.fit)
+```
+
+## interpretation of the plm of Unsigned Discretionary Accrual:If there are statistical significant correlation between delay and unsigned accruals it means the same firm appears to be delaying when they simultaneously have more accruals (either positive or negative). One interpretation is that they are using the extra time to manage their accounting reports.
+
+**4.** Predictive Model of Operation Cash Flow 
+
+operating cash $flows_{i,t+1} = β_{0} + β_{1accrualsi},t + β_{2operating cash flows_{i,t} + ε_{i,t+1} (3)$ 
+
+
+```{r}
+# regression on whole accrual dataset
+cash.flow.fit <- lm(oancf ~ accrual + oancf_lag1, data=accrual_df)
+summary(cash.flow.fit)
+```
+
+### The sample period is 29 years (1988-2017); divide into period 1(1988-2002) and period 2(2003-2017) and repeat the regression exercise. 
+```{r}
+accu1 <- subset(accrual_df, fyear <= 2002)
+accu2 <- subset(accrual_df, fyear > 2002)
+
+cash.flow.fit.before2002 <- summary(lm(oancf ~ accrual + oancf_lag1, data=accu1))
+print(cash.flow.fit.before2002)
+```
+
+```{r}
+cash.flow.fit.after2002 <- summary(lm(oancf ~ accrual + oancf_lag1, data=accu2))
+cat('Summary statistics for the years of 2002-2017:')
+print(cash.flow.fit.after2002)
+```
+### Interpretation: Accruals have a coefficient of close to zero and insignificant in the 1988 to 2002 time period. All of the predictive power of accruals occur in the post 2002 period. One possibility is that accounting accruals were not representative of economic reality in the pre 2002 period and became more representative subsequently. Another possibility is that economic performance became more persistent over time which enabled accruals to have additional forecasting power.
+
