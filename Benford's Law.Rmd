@@ -148,24 +148,3 @@ multiplot(p5,p6,p7,p8)
 
 ```
 
-**4.** 
-```{r fig3, fig.height = 3, fig.width = 5, fig.align = "center"}
-roa_df <- df1n %>% 
-  group_by(gvkey) %>% 
-  mutate(at_lag1 = dplyr::lag(at, k = 1)) %>% 
-  mutate(roa = ni / at_lag1) %>% 
-  filter(roa >= -.1 & roa <= .1) %>% 
-  mutate(roa_lag1 = dplyr::lag(roa, k=1),
-         roa_change = roa - roa_lag1)
-
-ggplot(subset(roa_df, roa_change != 'NA')) + 
-  geom_histogram(aes(roa_change), bins = 30)+
-  labs(x = 'ROA from year t to t-1 for each firm') + 
-  geom_vline(xintercept=0, col='red', linetype=4)+
-  theme_classic()
-```
-### Comparing ROA and EPS changing trend:EPS is more asymmetric and in the direction of positive side, indicating firms are reported to perform better YoY earnings per share than return on asset. Both performances asymmetric around 0.
-### Possible explanations are: 1) earnings management 2) firms working harder and 3) inflation or other general trends that make small improvements more likely than small set backs.
-### EPS equals to net income divided by total number of issued stock shares; ROA equals to net income deivided by lagged total assets. From the calculation, we can learn that they have the same numerator but different denominator. Firm have the ability to manage the number of shares outstanding (EPS denominator) by issuing more shares or repurchasing them back. Also if the firm assume the investors look at EPS more often than ROA, they have the incentive to drive EPS harder. 
-
-
