@@ -1,0 +1,148 @@
+---
+title: 'Earnings Manipulation - Benford\'s Law'
+author: "Lu Chen"
+output:
+  html_document: default
+  pdf_document: default
+Indent: false
+---
+
+```{r}
+setwd("/Users/chenlu/Google Drive/Summer/6030 Accounting/data assignment1")
+df1n <- read.csv('cleaned_data.csv',header = TRUE)
+attach(data)
+library(ggplot2)
+library(dplyr)
+library(data.table)
+library(benford.analysis)
+library(plm)
+library(knitr)
+library(kableExtra)
+library(zoo)
+```
+
+**1.** Plot the distribution of the first digit
+```{r fig1, fig.height = 3, fig.width = 5, fig.align = "center"}
+revenue_bf <- data.frame(benford(abs(df1n$revt), number.of.digits = 1, sign = 'positive', discrete = TRUE, round = 3)$bfd)[,c("digits","data.dist", "benford.dist", "data.second.order.dist")]
+cash_bf <- data.frame(benford(abs(df1n$oancf), number.of.digits = 1, sign = 'positive', discrete = TRUE, round = 3)$bfd)[,c("digits","data.dist", "benford.dist","data.second.order.dist")]
+asset_bf <- data.frame(benford(abs(df1n$at), number.of.digits = 1, sign = 'positive', discrete = TRUE, round = 3)$bfd)[,c("digits","data.dist", "benford.dist","data.second.order.dist")]
+
+colnames(revenue_bf) <- c('digits','revenue', 'benford_revenue','second_revenue')
+colnames(cash_bf) <- c('digits','cashflow', 'benford_cashflow','second_cashflow')
+colnames(asset_bf) <- c('digits','totalasset', 'benford_at','second_at')
+
+digits_df <- merge(merge(revenue_bf, cash_bf), asset_bf)
+
+# plotting revenue and benford revenue
+p1=ggplot(digits_df) +
+  geom_line(aes(y=digits, x=revenue, colour="revenue"))+
+  geom_line(aes(y=digits, x = benford_revenue, colour="benford_revenue"),linetype = 2) +
+  labs(x = 'digits', y = 'frequency') +
+  ggtitle("First digit distribution of actual revnue and theoretical benford ")+
+  scale_color_manual(name = "",
+                     values = c("revenue" = 'red', "benford_revenue" = 'blue'))+
+  theme_classic()
+
+# plotting cash flow and benford cash flow
+p2=ggplot(digits_df) +
+  geom_line(aes(y=digits, x=cashflow, colour="cashflow"))+
+  geom_line(aes(y=digits, x = benford_cashflow, colour="benford_cashflow"),linetype = 2) +
+  labs(x = 'digits', y = 'frequency') +
+  ggtitle("First digit distribution of actual asset and theoretical benford ")+
+  scale_color_manual(name = "",
+                     values = c("cashflow" = 'red', "benford_cashflow" = 'blue'))+
+  theme_classic()
+
+# plotting asset and benford asset
+p3=ggplot(digits_df) +
+  geom_line(aes(y=digits, x=totalasset, colour="asset"))+
+  geom_line(aes(y=digits, x = benford_revenue, colour="benford_asset"),linetype = 2) +
+  labs(x = 'digits', y = 'frequency') +
+  ggtitle("First digit distribution of actual asset and theoretical benford ")+
+  scale_color_manual(name = "",
+                     values = c("asset" = 'red', "benford_asset" = 'blue')) + 
+  theme_classic()
+
+p4=ggplot(digits_df) +
+  geom_line(aes(digits, revenue, col='revenue'), linetype=1)+
+  geom_line(aes(digits, cashflow, col='cash flow'), linetype=2)+
+  geom_line(aes(digits, totalasset, col='total asset'), linetype=4)+
+  #scale_x_continuous(limits=c(1985, 2017),breaks=seq(1985, 2017, 5))+
+  scale_color_manual(name="", values=c("revenue"="darkgreen","cash flow"="blue",'total asset'='red'))+
+  labs(x = 'digits', y = 'frequency')+
+  ggtitle("Distribution Comparison of first-digit asset, revenue and cashflow")+
+  theme_classic()
+
+library("Rmisc")
+library("plyr")
+multiplot(p1,p2,p3,p4)
+```
+
+**2.** Report the χ2 test statistic and interpret its significance. 
+```{r}
+c_revenue <- chisq(benford(abs(df1n$revt), number.of.digits = 1, sign = 'positive', discrete = TRUE, round = 3))$statistic['X-squared']
+c_cash <- chisq(benford(abs(df1n$oancf), number.of.digits = 1, sign = 'positive', discrete = TRUE, round = 3))$statistic['X-squared']
+c_asset <- chisq(benford(abs(df1n$at), number.of.digits = 1, sign = 'positive', discrete = TRUE, round = 3))$statistic['X-squared']
+
+p_revenue <- chisq(benford(abs(df1n$revt), number.of.digits = 1, sign = 'positive', discrete = TRUE, round = 3))$p.value
+p_cash <- chisq(benford(abs(df1n$oancf), number.of.digits = 1, sign = 'positive', discrete = TRUE, round = 3))$p.value
+p_asset <- chisq(benford(abs(df1n$at), number.of.digits = 1, sign = 'positive', discrete = TRUE, round = 3))$p.value
+
+chi <- data.frame(c_revenue, c_cash, c_asset)
+p_value <- data.frame(p_revenue, p_cash, p_asset)
+
+chi1 <- t(chi)
+p_value1 <- t(p_value)
+colnames(p_value1) <- 'p_value'
+chi_test <- cbind(chi1, p_value1)
+kable(chi_test, format = "markdown")
+```
+
+**3.** Repeat for second digit
+```{r fig3, fig.height = 3, fig.width = 5, fig.align = "center"}
+# plotting revenue and benford revenue
+p5=ggplot(digits_df) +
+  geom_line(aes(y=digits, x=second_revenue, colour="revenue"))+
+  geom_line(aes(y=digits, x = benford_revenue, colour="benford_revenue"),linetype = 2) +
+  labs(x = 'digits', y = 'frequency') +
+  ggtitle("Second digit distribution of actual revnue and theoretical benford ")+
+  scale_color_manual(name = "",
+                     values = c("revenue" = 'red', "benford_revenue" = 'blue'))+
+  theme_classic()
+
+# plotting cash flow and benford cash flow
+p6=ggplot(digits_df) +
+  geom_line(aes(y=digits, x=second_cashflow, colour="cashflow"))+
+  geom_line(aes(y=digits, x = benford_cashflow, colour="benford_cashflow"),linetype = 2) +
+  labs(x = 'digits', y = 'frequency') +
+  ggtitle("Second digit distribution of actual asset and theoretical benford ")+
+  scale_color_manual(name = "",
+                     values = c("cashflow" = 'red', "benford_cashflow" = 'blue'))+
+  theme_classic()
+
+# plotting asset and benford asset
+p7=ggplot(digits_df) +
+  geom_line(aes(y=digits, x=second_at, colour="asset"))+
+  geom_line(aes(y=digits, x = benford_revenue, colour="benford_asset"),linetype = 2) +
+  labs(x = 'digits', y = 'frequency') +
+  ggtitle("Second digit distribution of actual asset and theoretical benford ")+
+  scale_color_manual(name = "",
+                     values = c("asset" = 'red', "benford_asset" = 'blue'))+
+  theme_classic()
+
+p8=ggplot(digits_df) +
+  geom_line(aes(digits, second_revenue, col='revenue'), linetype=1)+
+  geom_line(aes(digits, second_cashflow, col='cash flow'), linetype=2)+
+  geom_line(aes(digits, second_at, col='total asset'), linetype=4)+
+  scale_color_manual(name="", values=c("revenue"="darkgreen","cash flow"="blue",'total asset'='red'))+
+  labs(x = 'digits', y = 'frequency')+
+  theme_classic()+
+  ggtitle("Distribution Comparison of second-digit asset, revenue and cashflow")
+
+library("Rmisc")
+library("plyr")
+multiplot(p5,p6,p7,p8)
+
+```
+
+**5.**Summrize: for both first and second digit, we use three variables(total asset, cash flow and revenue) to compare the distribution of actual data with therotical distribution - benford. It turns out that for first-digit, neither variable deviate from the theoretical pattern. However, for second-digit, all three variables, assets, revenue, and operating cash flows seem to deviate from Benford’s law. Note that even operating cash flows can be manipulated if firms are channel stuffing.
