@@ -7,7 +7,7 @@ Dataset: From Compustat, a database of financial, statistical and market informa
 
 Tools&Packages: R (dplyr, ggplot2, bendford.analysis, plm, data.table etc)
 
-Data Cleaning Process: 
+Data Cleaning Process:＜/br＞
 (1)Taking the following variables out of 1000+ variables: 
 gvkey (company identifier), 
 datadate, 
