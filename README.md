@@ -22,13 +22,13 @@ Oancf(Operating Activities Net Cash Flow),
 Sic(Standard Industry Classification Code),  
 Rdq(firm's earnings announcement date)  
 
-(2) Restrict sample to firms with fiscal years 1988 to 2017 inclusive. .
-(3) Drop any observation with missing assets, revenue, net income, EPS, account receivables, and operating cash flow.
-(4) If PPE is missing, set it to zero.
-(5) Drop any observation where revenue and account receivables are negative.
-(6) Drop duplicate observation based on all columns except the column rdq.
+(2) Restrict sample to firms with fiscal years 1988 to 2017 inclusive.  
+(3) Drop any observation with missing assets, revenue, net income, EPS, account receivables, and operating cash flow.  
+(4) If PPE is missing, set it to zero.  
+(5) Drop any observation where revenue and account receivables are negative.  
+(6) Drop duplicate observation based on all columns except the column rdq.  
 
-My final dataset have approximately 248,289 observations. 
+My final dataset have approximately 248,289 observations.   
 I'll upload cleaned data to save the time and you can refer to my file "Data_Cleaning.Rmd" for detailed commands
 
 Analysis:
