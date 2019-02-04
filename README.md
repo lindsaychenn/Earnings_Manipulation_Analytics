@@ -11,16 +11,16 @@ Data Cleaning Process:
 (1)Taking the following variables out of 1000+ variables:   
 gvkey (company identifier),   
 datadate,   
-fyear (fiscal year), 
-revt(total revenue), 
-rect(Receivables Total), 
-ppegt(Property, Plant and Equipment - Total (Gross)), 
-Epspi(Earnings Per Share (Basic) Including Extraordinary Items),
-Ni(Net Income (Loss)), 
-At(total asset), 
-Oancf(Operating Activities Net Cash Flow), 
-Sic(Standard Industry Classification Code),
-Rdq(firm's earnings announcement date)
+fyear (fiscal year),   
+revt(total revenue),   
+rect(Receivables Total),   
+ppegt(Property, Plant and Equipment - Total (Gross)),   
+Epspi(Earnings Per Share (Basic) Including Extraordinary Items),  
+Ni(Net Income (Loss)),   
+At(total asset),  
+Oancf(Operating Activities Net Cash Flow),   
+Sic(Standard Industry Classification Code),  
+Rdq(firm's earnings announcement date)  
 
 (2) Restrict sample to firms with fiscal years 1988 to 2017 inclusive. .
 (3) Drop any observation with missing assets, revenue, net income, EPS, account receivables, and operating cash flow.
