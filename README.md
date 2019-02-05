@@ -34,15 +34,15 @@ R (dplyr, ggplot2, bendford.analysis, plm, data.table etc)
 
 ## Analysis:  
 ### 1. Descriptive and Statistical analysis to observe the trend in the change of critical financial indicators   
-		a. Descriptive Findings:   
-			i. average total asset increase drastically compared to revenue and net income  
-			ii. Firm-reported YoY EPS change is more  asymmetric than ROA, suggesting a stronger incentive to manage the number of shares outstanding (EPS denominator) by issuing more shares or repurchasing them back.  
-		b. Methods Findings:  
-			i. Benford's Law (first-digit law):   
-				1) Comparing the distribution of first-digit in actual data and benford value, if there are huge deviation, it might be a sign of earning management.  
-				2) Calculating the residual to benford value and compare it with industry standard to find evidence of earning management  
-		c. Accrual Model:  
-			1) Discretionary Accruals Model  
+#### a. Descriptive Findings:   
+	i. average total asset increase drastically compared to revenue and net income  
+	ii. Firm-reported YoY EPS change is more  asymmetric than ROA, suggesting a stronger incentive to manage the number of shares 	outstanding (EPS denominator) by issuing more shares or repurchasing them back.  
+#### b. Methods Findings:  
+	i. Benford's Law (first-digit law):   
+		1) Comparing the distribution of first-digit in actual data and benford value, if there are huge deviation, it might be a sign of earning management.  
+		2) Calculating the residual to benford value and compare it with industry standard to find evidence of earning management  
+#### c. Accrual Model:  
+	1) Discretionary Accruals Model  
 				1) Model: Accruals_it = β_0 + β_1Cash Revenue Growth_it + β2Gross PPE_it + ψSIC_i + ε_it  
 				□ Accrual = net income - operating cash flow  
 				□ cash revenue growth = ∆ revenue - ∆ rect  
