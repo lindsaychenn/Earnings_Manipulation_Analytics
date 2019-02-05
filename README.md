@@ -1,38 +1,39 @@
 # Earnings_Manipulation_Analytics
-Objective: Applying financial methods such as benford's law, Beneish Earnings Manipulation Detection model, 
-           accruals model and operation cashflow prediction to detect the earnings manipulation behaviors in corporates.
+## Objective: 
+Applying financial methods such as benford's law, Beneish Earnings Manipulation Detection model, accruals model and operation cashflow prediction to detect the earnings manipulation behaviors in corporates.
            
-Dataset: From Compustat, a database of financial, statistical and market information on active and inactive global companies, 
-         spanning from year 1988–2017
+## Dataset: 
+From Compustat, a database of financial, statistical and market information on active and inactive global companies, spanning from year 1988–2017
 
-Tools&Packages: R (dplyr, ggplot2, bendford.analysis, plm, data.table etc)
+## Tools&Packages: 
+R (dplyr, ggplot2, bendford.analysis, plm, data.table etc)
 
-Data Cleaning Process:  
-(1)Taking the following variables out of 1000+ variables:   
-gvkey (company identifier),   
-datadate,   
-fyear (fiscal year),   
-revt(total revenue),   
-rect(Receivables Total),   
-ppegt(Property, Plant and Equipment - Total (Gross)),   
-Epspi(Earnings Per Share (Basic) Including Extraordinary Items),  
-Ni(Net Income (Loss)),   
-At(total asset),  
-Oancf(Operating Activities Net Cash Flow),   
-Sic(Standard Industry Classification Code),  
-Rdq(firm's earnings announcement date)  
+## Data Cleaning Process:  
+### (1)Taking the following variables out of 1000+ variables:   
+	gvkey (company identifier),   
+	datadate,   
+	fyear (fiscal year),   
+	revt(total revenue),   
+	rect(Receivables Total),   
+	ppegt(Property, Plant and Equipment - Total (Gross)),   
+	Epspi(Earnings Per Share (Basic) Including Extraordinary Items),  
+	Ni(Net Income (Loss)),   
+	At(total asset),  
+	Oancf(Operating Activities Net Cash Flow),   
+	Sic(Standard Industry Classification Code),  
+	Rdq(firm's earnings announcement date)  
 
-(2) Restrict sample to firms with fiscal years 1988 to 2017 inclusive.  
-(3) Drop any observation with missing assets, revenue, net income, EPS, account receivables, and operating cash flow.  
-(4) If PPE is missing, set it to zero.  
-(5) Drop any observation where revenue and account receivables are negative.  
-(6) Drop duplicate observation based on all columns except the column rdq.  
+### (2) Restrict sample to firms with fiscal years 1988 to 2017 inclusive.  
+### (3) Drop any observation with missing assets, revenue, net income, EPS, account receivables, and operating cash flow.  
+### (4) If PPE is missing, set it to zero.  
+### (5) Drop any observation where revenue and account receivables are negative.  
+### (6) Drop duplicate observation based on all columns except the column rdq.  
 
-My final dataset have approximately 248,289 observations.   
-I'll upload cleaned data to save the time and you can refer to my file "Data_Cleaning.Rmd" for detailed commands
+*My final dataset have approximately 248,289 observations.   
+*I'll upload cleaned data to save the time and you can refer to my file "Data_Cleaning.Rmd" for detailed commands
 
-Analysis:  
-	1. Descriptive and Statistical analysis to observe the trend in the change of critical financial indicators   
+## Analysis:  
+### 1. Descriptive and Statistical analysis to observe the trend in the change of critical financial indicators   
 		a. Descriptive Findings:   
 			i. average total asset increase drastically compared to revenue and net income  
 			ii. Firm-reported YoY EPS change is more  asymmetric than ROA, suggesting a stronger incentive to manage the number of shares outstanding (EPS denominator) by issuing more shares or repurchasing them back.  
