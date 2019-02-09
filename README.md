@@ -1,6 +1,6 @@
 # Earnings_Manipulation_Analytics
 ## Objective: 
-Applying financial methods such as benford's law, Beneish Earnings Manipulation Detection model, accruals model and operation cashflow prediction to detect the earnings manipulation behaviors in corporates.
+Applying financial methods such as benford's law, accruals model and operation cashflow prediction to detect the earnings manipulation behaviors in corporates.
            
 ## Dataset: 
 From Compustat, a database of financial, statistical and market information on active and inactive global companies, spanning from year 1988–2017
